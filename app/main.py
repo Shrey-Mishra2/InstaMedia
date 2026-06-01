@@ -1,15 +1,18 @@
 from fastapi import FastAPI, Depends, HTTPException
 from app.database import Base, engine, get_db,UserModel
 from sqlalchemy.orm import Session
-from app.model import UserSchema
+from app.model import UserSchema, LoginSchema
 from passlib.context import CryptContext
 
 Base.metadata.create_all(engine)
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-def get_password_hash(password):
+def get_password_hash(password: str):
     return pwd_context.hash(password)
+
+def verify_password(plain_password, hashed_password):
+    return pwd_context.verify(plain_password, hashed_password)
 
 app = FastAPI()
 
@@ -37,3 +40,22 @@ def user_register(body:UserSchema, db:Session=Depends(get_db)):
  
 
     return {"id": new_user.id, "username": new_user.username, "email": new_user.email}
+
+
+@app.post('/login')
+def user_login(body:LoginSchema, db:Session=Depends(get_db)):
+    user = db.query(UserModel).filter(UserModel.username== body.username).first()
+    if not user:
+        raise HTTPException(401, detail="Invalid Username or password...")
+    
+    if not verify_password(body.password, user.hash_password):
+        raise HTTPException(401, detail="Invalid Username or password...")
+    
+    return {
+        "message": "Login successful",
+        "username": user.username
+    }
+
+    
+
+    
