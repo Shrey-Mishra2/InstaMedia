@@ -11,8 +11,8 @@ class UserModel(Base):
 
     id = Column(Integer, primary_key= True)
     name = Column(String, nullable= False)
-    username = Column(String, nullable= False)
-    email = Column(String,  nullable= False)
+    username = Column(String, nullable= False, unique=True)
+    email = Column(String,  nullable= False, unique=True)
     hash_password = Column(String,  nullable= False)
 
 localsession = sessionmaker(bind=engine)

@@ -1,5 +1,6 @@
 from fastapi import FastAPI, Depends, HTTPException
 from app.database import Base, engine, get_db,UserModel
+from app.auth import create_access_token
 from sqlalchemy.orm import Session
 from app.model import UserSchema, LoginSchema
 from passlib.context import CryptContext
@@ -51,9 +52,11 @@ def user_login(body:LoginSchema, db:Session=Depends(get_db)):
     if not verify_password(body.password, user.hash_password):
         raise HTTPException(401, detail="Invalid Username or password...")
     
+    access_token = create_access_token(data={"sub": user.username})
+    
     return {
-        "message": "Login successful",
-        "username": user.username
+        "access_token": access_token,
+        "token_type": "bearer"
     }
 
     
