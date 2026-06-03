@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Depends, HTTPException
 from app.database import Base, engine, get_db,UserModel
-from app.auth import create_access_token
+from app.auth import create_access_token, get_current_user
 from sqlalchemy.orm import Session
 from app.model import UserSchema, LoginSchema
 from passlib.context import CryptContext
@@ -59,6 +59,12 @@ def user_login(body:LoginSchema, db:Session=Depends(get_db)):
         "token_type": "bearer"
     }
 
-    
+@app.get("/me")
+def get_me(current_user: UserModel = Depends(get_current_user)):
+    return {
+        "id": current_user.id,
+        "username": current_user.username,
+        "email": current_user.email
+    }
 
     
