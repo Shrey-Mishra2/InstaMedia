@@ -67,4 +67,18 @@ def get_me(current_user: UserModel = Depends(get_current_user)):
         "email": current_user.email
     }
 
-    
+@app.put("/update-profile")
+def update_profile(
+    name: str,
+    current_user: UserModel = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    current_user.name = name
+
+    db.commit()
+    db.refresh(current_user)
+
+    return {
+        "message": "Profile updated successfully",
+        "name": current_user.name
+    }
